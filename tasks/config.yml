@@ -1,0 +1,27 @@
+---
+
+- name: Running node-exporter
+  file:
+   path: /etc/systemd/system/node_exporter.service
+   state: touch
+   mode: 0755
+
+- name: copying files
+  template:
+   src: node_exporter
+   dest: /etc/systemd/system/node_exporter.service
+   mode: 0755
+
+- debug: var=ansible_enp0s8.ipv4.address
+
+- name: adding to prometheus.yml
+  lineinfile:
+   dest: /etc/prometheus/prometheus.yml
+   backup: True
+   insertafter: EOF
+   state: present
+   line: |
+       - job_name: 'node_exporter'
+         scrape_interval: 5s
+         static_configs:
+           - targets: ["{{ ansible_enp0s8.ipv4.address }}":9100]
